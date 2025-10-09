@@ -19,7 +19,7 @@ readme = "README.md"
 
 heapless = "0.8"
 
-embassy-net = { version = "0.7.0", features = [
+embassy-net = { version = "0.8.0", features = [
   "tcp",
   "udp",
   "raw",
@@ -28,17 +28,17 @@ embassy-net = { version = "0.7.0", features = [
   "dns",
 ] }
 
-embassy-sync = { version = "0.6.2" }
-
-embassy-time = { version = "0.4.0" }
-
 embassy-futures = { version = "0.1.1" }
+
+embassy-sync = { version = "0.7.2" }
+
+embassy-time = { version = "0.5.0" }
 
 defmt = { version = "1.0", optional = true }
 
 log = { version = "0.4", optional = true }
 
-embedded-io-async = { version = "0.6.1" }
+embedded-io-async = { version = "0.7.0" }
 
 mountain-mqtt = { version = "0.2.0", path = "../mountain-mqtt", default-features = false, features = [
   "embedded-io-async",
@@ -46,16 +46,16 @@ mountain-mqtt = { version = "0.2.0", path = "../mountain-mqtt", default-features
 ] }
 
 [features]
+
 default = ["defmt"]
+
+log = ["dep:log", "embassy-net/log", "embassy-sync/log", "embassy-time/log"]
 
 defmt = [
   "dep:defmt",
-  "embassy-net/defmt",
+  "mountain-mqtt/defmt",
   "embassy-sync/defmt",
   "embassy-time/defmt",
   "embassy-time/defmt-timestamp-uptime",
-  "embedded-io-async/defmt-03",
-  "mountain-mqtt/defmt",
+  "embassy-net/defmt",
 ]
-
-log = ["dep:log", "embassy-net/log", "embassy-sync/log", "embassy-time/log"]

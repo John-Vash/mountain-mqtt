@@ -10,7 +10,7 @@ use crate::data::{
 use crate::error::PacketReadError;
 use heapless::Vec;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Will<'a, const P: usize> {
     qos: QualityOfService,
     retain: bool,

@@ -11,6 +11,7 @@ use mountain_mqtt::data::quality_of_service::QualityOfService;
 use mountain_mqtt::embedded_hal_async::DelayEmbedded;
 use mountain_mqtt::embedded_io_async::ConnectionEmbedded;
 use mountain_mqtt::mqtt_manager::{ConnectionId, MqttOperations};
+use mountain_mqtt::packets::connect::Will;
 use mountain_mqtt::packets::publish::ApplicationMessage;
 
 /// Convert an [ApplicationMessage] to an application-specific event type
@@ -51,7 +52,7 @@ impl defmt::Format for Error {
 /// and the various timeouts and intervals used to manage sending pings,
 /// monitoring whether connections are responsive, and when to report that
 /// a connection is stabilised.
-pub struct Settings {
+pub struct Settings<'w, const P: usize> {
     /// The address of the MQTT server
     pub address: Ipv4Address,
 
@@ -93,9 +94,11 @@ pub struct Settings {
     /// that any expected retained messages have been received, and if they
     /// haven't they can be published.
     pub stabilisation_interval: Duration,
+
+    pub last_will: Option<Will<'w, P>>,
 }
 
-impl Settings {
+impl<'w, const P: usize> Settings<'w, P> {
     /// Create a new [Settings] with default intervals and timeouts
     pub fn new(address: Ipv4Address, port: u16) -> Self {
         Self {
@@ -107,6 +110,7 @@ impl Settings {
             poll_interval: Duration::from_millis(10),
             response_timeout: Duration::from_millis(5000),
             stabilisation_interval: Duration::from_millis(5000),
+            last_will: None,
         }
     }
 }
@@ -330,21 +334,23 @@ where
 }
 
 /// Handle messages until we encounter an error
-async fn handle_messages<'a, A, C, E, const Q: usize>(
+async fn handle_messages<'a, A, C, E, const Q: usize, const P: usize>(
     current_connection_id: ConnectionId,
     client: &mut C,
     state: &RefCell<State<A>>,
     connection_settings: &ConnectionSettings<'static>,
     event_sender: &Sender<'static, NoopRawMutex, MqttEvent<E>, Q>,
     action_receiver: &mut Receiver<'static, NoopRawMutex, A, Q>,
-    settings: &Settings,
+    settings: &Settings<'a, P>,
 ) -> Result<(), Error>
 where
     C: Client<'a>,
     A: MqttOperations + Clone,
     E: Clone,
 {
-    client.connect(connection_settings).await?;
+    client
+        .connect_with_will(connection_settings, settings.last_will.clone())
+        .await?;
 
     event_sender
         .send(MqttEvent::Connected {
@@ -394,6 +400,10 @@ where
         // If we have a pending action, try to perform it
         let pending_action = state.borrow_mut().pending_action.take();
         if let Some(action) = pending_action {
+            #[cfg(feature = "defmt")]
+            defmt::debug!("Performing pending action");
+            #[cfg(feature = "log")]
+            log::debug!("Performing pending action");
             try_action(
                 current_connection_id,
                 client,
@@ -407,6 +417,10 @@ where
 
         // Handle actions from receiver
         while let Ok(action) = action_receiver.try_receive() {
+            #[cfg(feature = "defmt")]
+            defmt::debug!("Received action");
+            #[cfg(feature = "log")]
+            log::debug!("Received action");
             try_action(
                 current_connection_id,
                 client,
@@ -489,7 +503,7 @@ where
 pub async fn run<A, E, const P: usize, const B: usize, const Q: usize>(
     stack: Stack<'static>,
     connection_settings: ConnectionSettings<'static>,
-    settings: Settings,
+    settings: Settings<'static, P>,
     event_sender: Sender<'static, NoopRawMutex, MqttEvent<E>, Q>,
     mut action_receiver: Receiver<'static, NoopRawMutex, A, Q>,
 ) -> !

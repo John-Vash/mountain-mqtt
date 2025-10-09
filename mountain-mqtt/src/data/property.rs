@@ -16,7 +16,7 @@ pub trait Property<'a, T> {
 #[macro_export]
 macro_rules! property_owned {
     ( $n:ident, $t:ty, $c:literal ) => {
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub struct $n<'a> {
             value: $t,
             phantom: PhantomData<&'a $t>,
@@ -68,7 +68,7 @@ macro_rules! property_owned {
 #[macro_export]
 macro_rules! property_variable_u32 {
     ( $n:ident, $c:literal ) => {
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub struct $n<'a> {
             value: u32,
             phantom: PhantomData<&'a u32>,
@@ -120,7 +120,7 @@ macro_rules! property_variable_u32 {
 #[macro_export]
 macro_rules! property_str {
     ( $n:ident, $c:literal ) => {
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub struct $n<'a> {
             value: &'a str,
         }
@@ -165,7 +165,7 @@ macro_rules! property_str {
 #[macro_export]
 macro_rules! property_string_pair {
     ( $n:ident, $c:literal ) => {
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub struct $n<'a> {
             value: StringPair<'a>,
         }
@@ -210,7 +210,7 @@ macro_rules! property_string_pair {
 #[macro_export]
 macro_rules! property_binary_data {
     ( $n:ident, $c:literal ) => {
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub struct $n<'a> {
             value: &'a [u8],
         }
@@ -256,7 +256,7 @@ macro_rules! property_binary_data {
 macro_rules! packet_properties {
     ( $n:ident, [ $( $p:ident ),+ ] ) => {
 
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub enum $n<'a>{
             $(
                 $p($p<'a>),
