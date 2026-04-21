@@ -17,9 +17,9 @@ readme = "README.md"
 
 [dependencies]
 
-heapless = "0.8"
+heapless = "0.9"
 
-embassy-net = { version = "0.8.0", features = [
+embassy-net = { version = "0.9.1", features = [
   "tcp",
   "udp",
   "raw",
@@ -28,11 +28,11 @@ embassy-net = { version = "0.8.0", features = [
   "dns",
 ] }
 
-embassy-futures = { version = "0.1.1" }
+embassy-futures = { version = "0.1.2" }
 
-embassy-sync = { version = "0.7.2" }
+embassy-sync = { version = "0.8.0" }
 
-embassy-time = { version = "0.5.0" }
+embassy-time = { version = "0.5.1" }
 
 defmt = { version = "1.0", optional = true }
 

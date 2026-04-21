@@ -16,7 +16,7 @@ repository = "https://github.com/mountainlizard/mountain-mqtt"
 readme = "README.md"
 
 [dependencies]
-heapless = "0.8"
+heapless = "0.9"
 
 embedded-io = { version = "0.7", optional = true }
 embedded-io-async = { version = "0.7", optional = true }
